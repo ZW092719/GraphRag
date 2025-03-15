@@ -1,0 +1,23 @@
+# requirements.txt
+
+# 主要库
+gradio
+langchain
+langchain-community
+pypinyin
+sentence-transformers
+zhipuai
+unstructured
+pymilvus
+
+# 其他依赖
+tqdm
+
+# nltk_data 解压后放到 C:\Users\user\AppData\Roaming  路径下
+
+# Pycharm报错：Error:failed to find libmagic. Check your installation
+# 解决方法1：
+# 使用命令
+# pip uninstall python-magic
+# pip install python-magic-bin==0.4.14
+

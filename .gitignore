@@ -1,0 +1,15 @@
+.cache/
+.idea/
+CLIP_model/
+database_dir/
+venv/
+new_upload/
+test/
+*.zip
+source/__pycache__/
+source/.gradio/
+source/.vscode/
+source/lib/
+source/test_gradio/
+
+

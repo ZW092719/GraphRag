@@ -17,11 +17,10 @@ import numpy as np
 # document processing
 class Document():
     def __init__(self,dir,name):
-        loader = DirectoryLoader(dir,show_progress=True) 
-        documents = loader.load() # 读取所有txt
-
         # contents persistence
         if os.path.exists(os.path.join("..",".cache",f"{name}_contents.pkl")) == False:
+            loader = DirectoryLoader(dir,show_progress=True) 
+            documents = loader.load() # 读取所有txt
             # 对txt文本进行分割,并保存为.pkl文件
             text_spliter = CharacterTextSplitter(chunk_size=300,chunk_overlap=50)
 

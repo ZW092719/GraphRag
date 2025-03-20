@@ -13,87 +13,77 @@ from pdf_convert import*
 input3:上传
 input2:prompt list
 '''
-def function_report_generation(name,input3,input2):
-    global database_list,database_namelist
+# 生成报告函数修改
+# 修改报告生成函数，移除生成过程的输出
+def function_report_generation(name, input3, input2):
+    global database_list, database_namelist
 
-    database = database_list[database_namelist.index(name)] # 选择对应的数据库
+    database = database_list[database_namelist.index(name)]  # 选择对应的数据库
 
-    result1 = []
-    result2 = []
-
-    result1.append("内容解析中......")
-
-    yield "\n".join(result1), "\n".join(result2)
+    # 只保留最终报告结果
+    result = []
 
     all_report = ""
     for p_n, group in database.prompt_data.groupby("段落"):
-        result1.append(f"第{p_n}段内容生成中......")
-        yield "\n".join(result1), "\n".join(result2)
-        p_n_content = [] # 每段的内容
+        p_n_content = []  # 每段的内容
 
         for question in group["prompt"]:
-            #Project_database的search--->embdatabase的search
-            search_result = database.search(question, 1) # 设置找到最近似的1个内容
-
-            # print("向量库检索内容：", search_result)
+            search_result = database.search(question, 1)
             search_result = "\n".join(search_result)
 
-            prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下：```{search_result}```,用户的问题是：{question}，如果已知内容无法回答用户的问题，无需输出其他内容" #请直接回复：不知道，无需输出其他内容"
+            prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下：```{search_result}```,用户的问题是：{question}，如果已知内容无法回答用户的问题，无需输出其他内容"
 
-            # generate word one by one
-            response = get_respone(prompt) # 调用大模型api
-            result1.append("大模型检索及回答内容:\n")
-
+            # 调用大模型API
+            response = get_respone(prompt)
+            
+            content = ""
             for trunk in response:
-                result1[-1] += trunk.choices[0].delta.content # 逐个添加回复
-                yield "\n".join(result1), "\n".join(result2)
+                content += trunk.choices[0].delta.content
 
-            result1[-1] = result1[-1].replace("\n", "")
-            p_n_content.append(result1[-1])
-
-            # result1.append(f"大模型检索及回答内容：{result1[-1] }")
-            yield "\n".join(result1), "\n".join(result2)
+            content = content.replace("\n", " ")
+            p_n_content.append(content)
 
         prompt_report = f"你是一个大学教授，你需要根据相关内容，来写一段内容，生成的内容必须严格来自相关内容，语言必须严谨、符合事实，并且不能使用第一人称，相关内容如下：\n```{''.join(p_n_content)}"
-        result1.append(f"第{p_n}段报告内容：\n")
-        result2.append(f"\t\t\t")
-        yield "\n".join(result1), "\n".join(result2)
-
+        
+        # 为每段报告添加标题
+        result.append(f"## 第{p_n}段报告\n\n")
+        
+        # 获取大模型响应
         response = get_respone(prompt_report)
-
+        
         for trunk in response:
-            result1[-1] += trunk.choices[0].delta.content  # 每次添加在末尾
-            result2[-1] += trunk.choices[0].delta.content  # 每次添加在末尾
+            result[-1] += trunk.choices[0].delta.content
+            # 只返回最终报告
+            yield "\n\n".join(result)
 
-            result1[-1] = result1[-1].replace("\n", "")
-            result2[-1] = result2[-1].replace("\n", "")
-            yield "\n".join(result1), "\n".join(result2)
-
-        all_report += ("    " + "".join(result2[-1]))
-        all_report += "\n"
-
-        result1.append("*" * 30)
-
-        yield "\n".join(result1), "\n".join(result2)
+        all_report += result[-1] + "\n\n"
 
 # 知识库回答
 # text:提问的prompt
-def function_QA(name,text):
+# 知识库问答函数修改
+def function_QA(name, text):
     global database_list, database_namelist
     database = database_list[database_namelist.index(name)]
 
-    result = [""]
+    result = ["## 回答\n\n"]
 
-    search_result, image_paths = database.search(text, 3, search_img=True) # 返回检索到的文本
-    search_result = "\n".join(search_result) # 将结果拼接,用空格分割开
+    search_result, image_paths = database.search(text, 3, search_img=True)  # 返回检索到的文本
+    search_result = "\n".join(search_result)  # 将结果拼接,用空格分割开
 
-    prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，如果已知内容无法回答用户的问题，请直接回复：知识库无相关信息,请完善知识库!"
+    prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，如果已知内容无法回答用户的问题请你来回答内容要详尽，请直接回复：知识库无相关信息,请完善知识库!"
 
-    response = get_respone(prompt) # 一个特定的类型,并不直接是文本
+    response = get_respone(prompt)  # 一个特定的类型,并不直接是文本
 
     for trunk in response:
         result[-1] += trunk.choices[0].delta.content
-        yield "\n".join(result) , image_paths
+        yield "\n".join(result), image_paths
+    
+    # 如果有检索到的内容，添加来源信息
+    if search_result.strip():
+        result.append("\n\n### 相关来源\n")
+        result.append("- 来自知识库的检索结果")
+        
+    yield "\n".join(result), image_paths
     
     
     # return  None, image_paths

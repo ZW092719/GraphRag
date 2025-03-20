@@ -37,7 +37,7 @@ for _, row in relationships_df.iterrows():
         row["target"],
         value=row.get("rank", 1),  # 使用get避免KeyError
         title=f"关系: {row.get('description', '无描述')}",  
-        label=row.get("description", "无描述"),  
+        #label=row.get("description", "无描述"),  
         font={"size": 10, "color": "black", "lineHeight": 50},  
         smooth=True  
     )

@@ -2,38 +2,38 @@
 import openai
 from openai import OpenAI
 
-# »ñÈ¡´ğ°¸µÄº¯Êı
+# è·å–ç­”æ¡ˆçš„å‡½æ•°
 def get_ans(prompt):
-    openai.api_key = "your-api-key"  # ÇëÊ¹ÓÃÄã×Ô¼ºµÄ API Key
+    openai.api_key = "your-api-key"  # è¯·ä½¿ç”¨ä½ è‡ªå·±çš„ API Key
 
     response = openai.Completion.create(
-        model="gpt-4",  # Äã¿ÉÒÔÑ¡ÔñÊÊºÏµÄÄ£ĞÍ£¬gpt-4 »ò gpt-3.5
+        model="gpt-4",  # ä½ å¯ä»¥é€‰æ‹©é€‚åˆçš„æ¨¡å‹ï¼Œgpt-4 æˆ– gpt-3.5
         prompt=prompt,
         max_tokens=1024,
         temperature=0.45,
         top_p=0.3,
-        stream=False  # stream ÉèÖÃÎª False ÒÔÒ»´ÎĞÔ»ñÈ¡ÍêÕûµÄ´ğ°¸
+        stream=False  # stream è®¾ç½®ä¸º False ä»¥ä¸€æ¬¡æ€§è·å–å®Œæ•´çš„ç­”æ¡ˆ
     )
 
-    return response.choices[0].text.strip()  # ·µ»ØÉú³ÉµÄÎÄ±¾²¢È¥³ı¶àÓàµÄ¿Õ¸ñ
+    return response.choices[0].text.strip()  # è¿”å›ç”Ÿæˆçš„æ–‡æœ¬å¹¶å»é™¤å¤šä½™çš„ç©ºæ ¼
 
-# »ñÈ¡ÏìÓ¦µÄº¯Êı
+# è·å–å“åº”çš„å‡½æ•°
 def get_respone(prompt):
     api_key = "c7219f76321b1818e9c0df788868adcd81ec2a51"  # https://aistudio.baidu.com/account/accessToken
     client = OpenAI(
         api_key=api_key,
-        base_url="https://aistudio.baidu.com/llm/lmapi/v3" # ĞÇºÓÉçÇø´óÄ£ĞÍAPI·şÎñµÄBaseURL
+        base_url="https://aistudio.baidu.com/llm/lmapi/v3" # æ˜Ÿæ²³ç¤¾åŒºå¤§æ¨¡å‹APIæœåŠ¡çš„BaseURL
     )
-    # ×¼±¸ÏûÏ¢¸ñÊ½
+    # å‡†å¤‡æ¶ˆæ¯æ ¼å¼
     messages = [{"role": "user", "content": prompt}]
     
-    # µ÷ÓÃ½Ó¿ÚÉú³ÉÏìÓ¦
+    # è°ƒç”¨æ¥å£ç”Ÿæˆå“åº”
     response = client.chat.completions.create(
-        model="ernie-4.0-turbo-128k",  # Ñ¡ÔñÄ£ĞÍ
-        messages=messages,  # Ê¹ÓÃmessages¶ø·Çprompt
+        model="ernie-4.0-turbo-128k",  # é€‰æ‹©æ¨¡å‹
+        messages=messages,  # ä½¿ç”¨messagesè€Œéprompt
         max_tokens=1024,
         temperature=0.45,
         top_p=0.3,
-        stream=True  # ÉèÖÃstream²ÎÊıÎªTrueÒÔÖğ²½½ÓÊÕÏìÓ¦
+        stream=True  # è®¾ç½®streamå‚æ•°ä¸ºTrueä»¥é€æ­¥æ¥æ”¶å“åº”
     )
-    return response  # ·µ»ØÕû¸öÏìÓ¦¶ÔÏó£¬¿ÉÒÔ½øÒ»²½´¦Àí
+    return response  # è¿”å›æ•´ä¸ªå“åº”å¯¹è±¡ï¼Œå¯ä»¥è¿›ä¸€æ­¥å¤„ç†

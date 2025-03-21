@@ -20,4 +20,5 @@ tqdm
 # 使用命令
 # pip uninstall python-magic
 # pip install python-magic-bin==0.4.14
+# mineru
 

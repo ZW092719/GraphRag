@@ -12,7 +12,7 @@ from utils import get_available_graph_html_files, update_graph_html, update_butt
 PORT = 8000
 
 def start_http_server():
-    os.chdir(os.path.dirname(os.path.abspath("法律.html")))
+    os.chdir(os.path.dirname(os.path.abspath("laodong.html")))
     handler = http.server.SimpleHTTPRequestHandler
     with socketserver.TCPServer(("", PORT), handler) as httpd:
         httpd.serve_forever()
@@ -257,12 +257,13 @@ with gr.Blocks(css="""
                         label="知识库选择", 
                         value=database_namelist[0]
                     )
-                    input_question = gr.Textbox(label="请输入您的问题")
-                    submit_qa_btn = gr.Button("🔍 生成回答")
-
-                    with gr.Accordion("📢 回答"):
+                    
+                    with gr.Accordion("📢 回答", open=True):
                         output_answer = gr.Markdown(label="回答")
                         output_images = gr.Gallery(label="相关图片", columns=[3], height=300)
+                    
+                    input_question = gr.Textbox(label="请输入您的问题")
+                    submit_qa_btn = gr.Button("🔍 生成回答")
 
                 # Graph 可视化界面
                 with gr.Group(visible=False, elem_classes="function-panel") as graph_panel:

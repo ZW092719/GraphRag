@@ -70,7 +70,13 @@ def function_QA(name, text):
     search_result, image_paths = database.search(text, 3, search_img=True)  # 返回检索到的文本
     search_result = "\n".join(search_result)  # 将结果拼接,用空格分割开
 
-    prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，如果已知内容无法回答用户的问题请你来回答内容要详尽，请直接回复：知识库无相关信息,请完善知识库!"
+    #prompt = f"我完成了一个知识图谱结合rag的系统,现在需要你根据我从数据库检索到的内容帮我从中提取可能作为知识图谱中顶点的关键词以 \
+    #便于我在知识图谱中根据顶点进行进一步检索,这是我的文本输入{search_result},请给我输出一个关键词列表,关键词列表以列表形式输出"
+    #keyword = get_respone(prompt)
+    #result_with_graph = f(keyword)
+
+    prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，\
+    如果已知内容无法回答用户的问题请你来回答内容要详尽，请直接回复：知识库无相关信息,请完善知识库!"
 
     response = get_respone(prompt)  # 一个特定的类型,并不直接是文本
 

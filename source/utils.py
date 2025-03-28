@@ -6,8 +6,13 @@ def get_available_graph_html_files():
     html_files = [f for f in os.listdir(current_dir) if f.endswith('.html')]
     return html_files
 
-def update_graph_html(selected_html, port=8000, fullscreen=False):
+def update_graph_html(selected_html, is_fullscreen=False, port=8080):
     """根据选择的HTML文件更新图表显示"""
+    # 处理参数 - 如果是多参数传入，提取所需值
+    fullscreen = False
+    if isinstance(is_fullscreen, bool):
+        fullscreen = is_fullscreen
+    
     # 根据是否全屏设置不同的样式
     if fullscreen:
         # 全屏模式下的样式
@@ -52,12 +57,12 @@ def update_graph_html(selected_html, port=8000, fullscreen=False):
     """
     return html_content
 
-def toggle_fullscreen(selected_html, current_state, port=8000):
+def toggle_fullscreen(selected_html, current_state, port=8080):
     """切换全屏状态并更新图表显示"""
     # 切换状态
     new_state = not current_state
     # 使用新状态更新图表
-    return update_graph_html(selected_html, port, new_state), new_state
+    return update_graph_html(selected_html, new_state, port), new_state
 
 
 def update_button_text(is_full):

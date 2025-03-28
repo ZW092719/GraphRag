@@ -3,8 +3,8 @@ from pyvis.network import Network
 import os
 
 # 读取节点和关系数据
-nodes_df = pd.read_parquet("../test/output/create_final_nodes.parquet")
-relationships_df = pd.read_parquet("../test/output/create_final_relationships.parquet")
+nodes_df = pd.read_parquet("../graph/MFD/output/create_final_nodes.parquet")
+relationships_df = pd.read_parquet("../graph/MFD/output/create_final_relationships.parquet")
 
 # 创建 Pyvis 网络
 net = Network(
@@ -43,10 +43,10 @@ for _, row in relationships_df.iterrows():
     )
 
 # 生成 HTML
-net.show("graph.html")
+net.show("法律.html")
 
 # 在生成的HTML文件中添加自定义样式和交互功能
-html_file = "graph.html"
+html_file = "法律.html"
 
 # 读取生成的HTML文件
 with open(html_file, 'r', encoding='utf-8') as file:
@@ -122,6 +122,20 @@ html_content = html_content.replace('<div id="mynetwork"></div>',
 # 添加节点选择和搜索功能脚本
 node_selection_script = '''
 <script>
+    // 存储节点原始颜色
+    var nodeColors = {};
+    
+    // 在网络加载完成后初始化节点颜色
+    network.once("afterDrawing", function() {
+        // 获取所有节点
+        var allNodes = nodes.get();
+        
+        // 存储每个节点的原始颜色
+        allNodes.forEach(node => {
+            nodeColors[node.id] = node.color;
+        });
+    });
+    
     // 在绘图完成后添加节点选择事件
     network.on("selectNode", function(params) {
         // 获取选中的节点
@@ -145,14 +159,14 @@ node_selection_script = '''
                     ...node,
                     color: {background: '#2196F3', border: '#1976D2'},
                     size: 35,
-                    font: {color: '#ffffff', size: 16, face: 'bold'}
+                    font: {color: '#000000', size: 16, face: 'bold'}
                 };
             } else if (connectedNodes.has(node.id)) {
                 return {
                     ...node,
                     color: {background: '#64B5F6', border: '#42A5F5'},
                     size: 30,
-                    font: {color: '#ffffff', size: 14}
+                    font: {color: '#000000', size: 14}
                 };
             } else {
                 return {
@@ -215,7 +229,7 @@ node_selection_script = '''
 
         // 遍历所有节点，匹配搜索关键字
         nodes.update(nodes.get().map(node => {
-            if (node.label && node.label.toLowerCase().includes(keyword)) {
+            if (keyword && node.label && node.label.toLowerCase().includes(keyword)) {
                 return {
                     ...node, 
                     color: {background: '#ffeb3b', border: '#f44336'}, 
@@ -235,7 +249,7 @@ node_selection_script = '''
 
         // 遍历所有边，判断是否需要高亮
         edges.update(edges.get().map(edge => {
-            let highlight = [edge.from, edge.to].some(nodeId => {
+            let highlight = keyword && [edge.from, edge.to].some(nodeId => {
                 let node = nodes.get(nodeId);
                 return node && node.label && node.label.toLowerCase().includes(keyword);
             });

@@ -36,4 +36,4 @@ def get_respone(prompt):
         top_p=0.3,
         stream=True  # 设置stream参数为True以逐步接收响应
     )
-    return response  # 返回整个响应对象，可以进一步处理
+    return response  

@@ -3,8 +3,8 @@ from pyvis.network import Network
 import os
 
 # 读取节点和关系数据
-nodes_df = pd.read_parquet("../graph/MFD/output/create_final_nodes.parquet")
-relationships_df = pd.read_parquet("../graph/MFD/output/create_final_relationships.parquet")
+nodes_df = pd.read_parquet("../graph/marriage/output/create_final_nodes.parquet")
+relationships_df = pd.read_parquet("../graph/marriage/output/create_final_relationships.parquet")
 
 # 创建 Pyvis 网络
 net = Network(
@@ -43,10 +43,10 @@ for _, row in relationships_df.iterrows():
     )
 
 # 生成 HTML
-net.show("法律.html")
+net.show("婚姻.html")
 
 # 在生成的HTML文件中添加自定义样式和交互功能
-html_file = "法律.html"
+html_file = "婚姻.html"
 
 # 读取生成的HTML文件
 with open(html_file, 'r', encoding='utf-8') as file:

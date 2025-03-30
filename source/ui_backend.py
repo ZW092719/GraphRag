@@ -61,7 +61,7 @@ def function_report_generation(name, input3, input2):
 # 知识库回答
 # text:提问的prompt
 # 知识库问答函数修改
-def function_QA(name, text):
+def function_QA(name, text, model_name="deepseek-v3"):
     global database_list, database_namelist
     database = database_list[database_namelist.index(name)]
 
@@ -70,19 +70,15 @@ def function_QA(name, text):
     search_result, image_paths = database.search(text, 3, search_img=True)  # 返回检索到的文本
     search_result = "\n".join(search_result)  # 将结果拼接,用空格分割开
 
-    #prompt = f"我完成了一个知识图谱结合rag的系统,现在需要你根据我从数据库检索到的内容帮我从中提取可能作为知识图谱中顶点的关键词以 \
-    #便于我在知识图谱中根据顶点进行进一步检索,这是我的文本输入{search_result},请给我输出一个关键词列表,关键词列表以列表形式输出"
-    #keyword = get_respone(prompt)
-    #result_with_graph = f(keyword)
+    prompt = f"请你在不违背已知内容的前提下尽可能多的回答用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，\
+    如果已知内容无法回答用户的问题请你来回答内容要详尽"
 
-    prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，\
-    如果已知内容无法回答用户的问题请你来回答内容要详尽，请直接回复：知识库无相关信息,请完善知识库!"
-
-    response = get_respone(prompt)  # 一个特定的类型,并不直接是文本
+    response = get_respone(prompt, model_name)  # 一个特定的类型,并不直接是文本
 
     for trunk in response:
-        result[-1] += trunk.choices[0].delta.content
-        yield "\n".join(result), image_paths
+        if trunk.choices[0].delta.content is not None:  # 添加对 None 值的检查
+            result[-1] += trunk.choices[0].delta.content
+            yield "\n".join(result), image_paths
     
     # 如果有检索到的内容，添加来源信息
     if search_result.strip():
@@ -159,8 +155,8 @@ def upload(files, input_database_select_report):  # files will be stored in a te
             shutil.copy(file.name,save_path)
         elif file.name.endswith(".pdf"): # pdf转换为图像和.txt
             os.makedirs(os.path.join(save_path, "image"), exist_ok = True)
-            pdf_converter = PdfConverter(file, txt_dir, os.path.join(save_path, "img"))
-            md_save_dir, every_img_dir = pdf_converter.convert()
+            pdf_converter = PdfConverter(file, txt_dir, os.path.join(save_path, "image"))
+            md_save_dir, every_img_dir, _ = pdf_converter.convert()
 
 
     # create database

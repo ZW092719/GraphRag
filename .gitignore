@@ -11,6 +11,6 @@ source/.gradio/
 source/.vscode/
 source/lib/
 source/test_gradio/
-source/graph/
+graph/
 
 

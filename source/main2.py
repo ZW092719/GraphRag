@@ -14,6 +14,9 @@ import time
 # ==== 1️⃣ 启动 HTTP 服务器，确保 graph.html 可访问 ====
 PORT = 8080
 
+# 在文件开头添加模型列表
+AVAILABLE_MODELS = ["gpt-4", "qwen-vl-max", "deepseek-r1", "deepseek-v3"]
+
 class SimpleHTTPRequestHandlerWithCORS(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header('Access-Control-Allow-Origin', '*')
@@ -87,7 +90,7 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
         # 左侧侧边栏 - 功能选择
         with gr.Column(elem_classes="sidebar"):
             # 添加标题到侧边栏顶部 - 使用HTML而非Markdown
-            gr.HTML("""<div class="sidebar-title"><h2>🤖 智能法律助手</h2></div>""")
+            gr.HTML("""<div class="sidebar-title"><img src="./logo.jpg" alt="智能法律助手" class="logo-image" style="max-width: 100%; max-height: 80px;"></div>""")
             
             # 使用按钮组来代替Radio
             feature_btns = []
@@ -182,18 +185,50 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
                             # 输入框放在左上方，无边框色
                             input_question = gr.Textbox(
                                 show_label=False,
-                                placeholder="请输入您想问的法律问题2222...",
+                                placeholder="请输入您想问的法律问题...",
                                 lines=3,
                                 max_lines=8,
                                 container=False
                             )
                             
-                            # 底部操作区（左侧为刷新按钮，右侧为发送按钮）
+                            # 底部操作区（左侧为模型选择，右侧为发送按钮）
                             with gr.Row(elem_classes="input-actions"):
-                                # 左下方：刷新按钮
-                                refresh_db_btn_qa = gr.Button("🔄 刷新知识库", elem_classes="standard-button")
+                                # 左下方：模型选择按钮
+                                model_button = gr.Button("选择模型 ▼", elem_classes="standard-button")
                                 # 右下方：发送按钮
                                 submit_qa_btn = gr.Button("发送", elem_classes="standard-button")
+                
+                # 模型选择状态
+                model_panel_state = gr.State(False)
+                
+                # 浮动模型选择面板 (默认隐藏)
+                with gr.Column(visible=False, elem_classes="floating-model-selector") as model_panel:
+                    model_selector = gr.Radio(
+                        choices=AVAILABLE_MODELS,
+                        label="",
+                        value="deepseek-v3",
+                        elem_classes=["model-selector"],
+                        interactive=True
+                    )
+                
+                # 添加自定义CSS
+                gr.HTML("""
+                <style>
+                .floating-model-selector {
+                    position: absolute;
+                    bottom: 100%;
+                    left: 0;
+                    z-index: 100;
+                    background-color: white;
+                    border: 1px solid #ddd;
+                    border-radius: 4px;
+                    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+                    margin-bottom: 5px;
+                    padding: 10px;
+                    min-width: 200px;
+                }
+                </style>
+                """)
                 
                 # 添加示例问题 - 放在输入框定义之后
                 with gr.Accordion("常见问题示例", open=False):
@@ -204,8 +239,28 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
                             "交通事故责任认定标准是什么？",
                             "如何申请离婚？"
                         ],
-                        inputs=input_question  # 直接传入组件对象
+                        inputs=input_question
                     )
+
+                # 模型选择面板控制
+                def toggle_model_panel(state):
+                    return not state, gr.update(visible=not state)
+                
+                model_button.click(
+                    fn=toggle_model_panel, 
+                    inputs=[model_panel_state], 
+                    outputs=[model_panel_state, model_panel]
+                )
+                
+                # 模型选择后更新按钮文本并隐藏面板
+                def update_model_button(choice, state):
+                    return f"选择模型: {choice} ▼", not state, gr.update(visible=False)
+                
+                model_selector.change(
+                    fn=update_model_button, 
+                    inputs=[model_selector, model_panel_state], 
+                    outputs=[model_button, model_panel_state, model_panel]
+                )
 
             # Graph 可视化界面
             with gr.Group(visible=False, elem_classes="function-panel") as graph_panel:
@@ -234,16 +289,17 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
             with gr.Group(visible=False, elem_classes="function-panel") as upload_panel:
                 # 顶部标题
                 gr.Markdown("### 上传新知识库", elem_classes="panel-title")
-                gr.Markdown("请选择要上传的知识库文件，支持TXT、CSV、JSON和PDF格式。系统将自动解析并构建知识库。", elem_classes="panel-description")
+                gr.Markdown("请选择要上传的知识库文件夹，文件夹中应包含：\n- prompt.xlsx 文件\n- txt 或 pdf 格式的文档", elem_classes="panel-description")
                 
                 with gr.Row():
                     with gr.Column():
                         with gr.Column(elem_classes="input-container"):
-                            # 直接放置文件上传组件
+                            # 使用单个文件上传组件
                             upload_files = gr.File(
-                                label="选择文件", 
-                                #file_types=[".txt", ".csv", ".json", ".pdf"],
-                                file_count="multiple"
+                                label="选择文件夹", 
+                                file_count="directory",
+                                file_types=[".txt", ".csv", ".json", ".pdf", ".xlsx"],
+                                interactive=True
                             )
                             
                             # 底部操作区
@@ -251,14 +307,28 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
                                 # 左侧可以放置提示信息或占位符
                                 gr.Markdown("")
                                 # 右侧放置上传按钮
-                                upload_button = gr.Button("开始上传", elem_classes="standard-button")
+                                upload_button = gr.Button("开始上传", 
+                                                        elem_classes="standard-button")
                 
-                upload_status = gr.Textbox(label="上传状态", interactive=False)
+                with gr.Column():
+                    upload_status = gr.Textbox(
+                        label="上传状态",
+                        value="等待上传...",
+                        interactive=False
+                    )
+                
+                # 修改上传按钮的点击事件，使用 progress 参数
+                def upload_with_progress(*args):
+                    return (
+                        gr.update(value="处理完成！"), 
+                        *upload(*args)
+                    )
                 
                 upload_button.click(
-                    fn=upload,
-                    inputs=[upload_button, input_database_select_report], 
-                    outputs=[input_database_select_report, input_prompt]
+                    fn=upload_with_progress,
+                    inputs=[upload_files, input_database_select_report], 
+                    outputs=[upload_status, input_database_select_report, input_prompt, input_database_select_QA],
+                    show_progress="处理中..."  # 在 Gradio 5.x 中显示进度
                 )
 
     # 功能切换逻辑
@@ -363,16 +433,12 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
         outputs=[input_database_select_report, input_database_select_QA, report_kb_button, kb_button]
     )
     
-    refresh_db_btn_qa.click(
-        fn=update_all_database_dropdowns,
-        inputs=None,
-        outputs=[input_database_select_report, input_database_select_QA, report_kb_button, kb_button]
+    # 修改问答提交事件，添加模型选择参数
+    submit_qa_btn.click(
+        function_QA,
+        [input_database_select_QA, input_question, model_selector],
+        [output_answer, output_images]
     )
-    
-    # 问答提交
-    submit_qa_btn.click(function_QA, 
-                        [input_database_select_QA, input_question], 
-                        [output_answer, output_images])
     
     # 知识库选择面板控制 (问答界面)
     def toggle_kb_panel(state):

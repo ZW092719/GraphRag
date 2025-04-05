@@ -31,7 +31,9 @@ def function_report_generation(name, input3, input2):
             search_result = database.search(question, 1)
             search_result = "\n".join(search_result)
 
-            prompt = f"请根据已知内容简洁明了的回复用户的问题，已知内容如下：```{search_result}```,用户的问题是：{question}，如果已知内容无法回答用户的问题，无需输出其他内容"
+            prompt = f"请根据已知内容简洁明了的回复用户的问题，\
+            已知内容如下：```{search_result}```,\
+            用户的问题是：{question},你的回复接下来将被用于生成专业的法律报告"
 
             # 调用大模型API
             response = get_respone(prompt)
@@ -43,7 +45,8 @@ def function_report_generation(name, input3, input2):
             content = content.replace("\n", " ")
             p_n_content.append(content)
 
-        prompt_report = f"你是一个大学教授，你需要根据相关内容，来写一段内容，生成的内容必须严格来自相关内容，语言必须严谨、符合事实，并且不能使用第一人称，相关内容如下：\n```{''.join(p_n_content)}"
+        prompt_report = f"你是一个大学教授，你需要根据相关内容书写专业的法律报告，生成的内容必须严格来自相关内容，语言必须严谨、符合事实，\
+        并且不能使用第一人称，相关内容如下：\n```{''.join(p_n_content)}"
         
         # 为每段报告添加标题
         result.append(f"## 第{p_n}段报告\n\n")
@@ -67,10 +70,11 @@ def function_QA(name, text, model_name="deepseek-v3"):
 
     result = ["## 回答\n\n"]
 
-    search_result, image_paths = database.search(text, 3, search_img=True)  # 返回检索到的文本
+    search_result, image_paths = database.search(text, 2, search_img=True)  # 返回检索到的文本
     search_result = "\n".join(search_result)  # 将结果拼接,用空格分割开
 
-    prompt = f"请你在不违背已知内容的前提下尽可能多的回答用户的问题，已知内容如下:```{search_result}```,用户的问题是：{text}，\
+    prompt = f"请你在不违背已知内容的前提下尽可能多的回答用户的问题，已知内容如下:```{search_result}```, \
+    用户的问题是：{text}，\
     如果已知内容无法回答用户的问题请你来回答内容要详尽"
 
     response = get_respone(prompt, model_name)  # 一个特定的类型,并不直接是文本
@@ -140,7 +144,8 @@ def upload(files, input_database_select_report):  # files will be stored in a te
 
     #----------------------处理上传的文件夹--------------------------#
     # create dir according to the database uploading
-    type_name = get_type_name(files)
+    #type_name = get_type_name(files)
+    type_name = "未成年人保护法"
     save_path = os.path.join("..", "new_upload" ,type_name)
     txt_dir = os.path.join(save_path, "txt")
     # 递归创建目录，如果目录已存在不会抛出异常

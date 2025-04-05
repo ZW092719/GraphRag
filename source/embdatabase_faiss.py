@@ -63,7 +63,7 @@ class EmbDataBase_Faiss():
         return similarity_matrix
     
 
-    def search(self,content,topn=3, search_img=False):
+    def search(self,content,topn=2, search_img=False):
         # 判断是否为字符串
         if isinstance(content,str):
             content = self.emb_model.text_to_emb(content) # 拿到文本变为的embbeding

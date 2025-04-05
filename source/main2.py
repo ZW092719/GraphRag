@@ -79,6 +79,13 @@ try:
         import shutil
         shutil.copy2(graph_file_source, DEFAULT_GRAPH_FILE)
         print(f"已复制图谱文件到根目录: {DEFAULT_GRAPH_FILE}")
+    
+    # 确保logo.jpg可以被HTTP服务器访问
+    if os.path.exists("logo.jpg"):
+        import shutil
+        # 将logo.jpg复制到当前工作目录（HTTP服务器的根目录）
+        shutil.copy2("logo.jpg", os.path.join(os.getcwd(), "logo.jpg"))
+        print(f"已复制Logo文件到根目录")
 except Exception as e:
     print(f"复制文件时出错: {e}")
 
@@ -90,16 +97,16 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
         # 左侧侧边栏 - 功能选择
         with gr.Column(elem_classes="sidebar"):
             # 添加标题到侧边栏顶部 - 使用HTML而非Markdown
-            gr.HTML("""<div class="sidebar-title"><img src="./logo.jpg" alt="智能法律助手" class="logo-image" style="max-width: 100%; max-height: 80px;"></div>""")
+            gr.HTML(f"""<div class="sidebar-title"><img src="http://127.0.0.1:{PORT}/logo.jpg" alt="智能法律助手" class="logo-image" style="max-width: 100%; max-height: 80px;"></div>""")
             
             # 使用按钮组来代替Radio
             feature_btns = []
             report_btn = gr.Button("📚 生成报告", elem_classes=["sidebar-btn", "selected"])
             qa_btn = gr.Button("⚖️ 智能问答", elem_classes=["sidebar-btn"])
-            contract_btn = gr.Button("💼 生成合同", elem_classes=["sidebar-btn"])
+            #contract_btn = gr.Button("💼 生成合同", elem_classes=["sidebar-btn"])
             graph_btn = gr.Button("📋 知识图谱", elem_classes=["sidebar-btn"])
             upload_btn = gr.Button("📤 上传知识库", elem_classes=["sidebar-btn"])
-            feature_btns.extend([report_btn, qa_btn, contract_btn, graph_btn, upload_btn])
+            feature_btns.extend([report_btn, qa_btn,  graph_btn, upload_btn]) # contract_btn  
             
         # 右侧主内容区
         with gr.Column(elem_classes="main-content-wrapper"):
@@ -374,35 +381,35 @@ with gr.Blocks(css_paths=["style.css"], theme="soft") as demo:
         fn=lambda: show_panel("report"),
         inputs=[],
         outputs=[report_generation_panel, qa_panel, graph_panel, upload_panel,
-                 report_btn, qa_btn, contract_btn, graph_btn, upload_btn]
+                 report_btn, qa_btn,  graph_btn, upload_btn] # contract_btn,
     )
     
     qa_btn.click(
         fn=lambda: show_panel("qa"),
         inputs=[],
         outputs=[report_generation_panel, qa_panel, graph_panel, upload_panel,
-                 report_btn, qa_btn, contract_btn, graph_btn, upload_btn]
+                 report_btn, qa_btn,  graph_btn, upload_btn] # contract_btn,
     )
     
-    contract_btn.click(
-        fn=lambda: show_panel("contract"),
-        inputs=[],
-        outputs=[report_generation_panel, qa_panel, graph_panel, upload_panel,
-                 report_btn, qa_btn, contract_btn, graph_btn, upload_btn]
-    )
+    # contract_btn.click(
+    #     fn=lambda: show_panel("contract"),
+    #     inputs=[],
+    #     outputs=[report_generation_panel, qa_panel, graph_panel, upload_panel,
+    #              report_btn, qa_btn, contract_btn, graph_btn, upload_btn]
+    # )
     
     graph_btn.click(
         fn=lambda: show_panel("graph"),
         inputs=[],
         outputs=[report_generation_panel, qa_panel, graph_panel, upload_panel,
-                 report_btn, qa_btn, contract_btn, graph_btn, upload_btn]
+                 report_btn, qa_btn,  graph_btn, upload_btn] # contract_btn,
     )
     
     upload_btn.click(
         fn=lambda: show_panel("upload"),
         inputs=[],
         outputs=[report_generation_panel, qa_panel, graph_panel, upload_panel,
-                 report_btn, qa_btn, contract_btn, graph_btn, upload_btn]
+                 report_btn, qa_btn,  graph_btn, upload_btn] # contract_btn,
     )
 
     # 功能事件处理
